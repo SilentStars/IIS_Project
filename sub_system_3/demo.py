@@ -4,36 +4,36 @@ from time import sleep
 def main():
     # Instantiate the audio player
     player = AudioPlayer()
+    sleep(5)
 
     # Play the first music for 10s
     player.play()
-    sleep(20)
+    player.add_favorite()
+    sleep(15)
 
-    # Stop the music
-    player.stop()
-    sleep(3)
 
     # Go forward 3 times and add 2nd song to favorite
     player.next()
-    player.add_favorite()
-    player.next()
-    player.next()
+    sleep(10)
 
-    # Play for 10 seconds
+    player.stop()
+    player.next()
+    sleep(5)
+    
     player.play()
-    sleep(20)
-
-    # Go backward of 1 song
+    sleep(10)
     player.previous()
-    sleep(20)
+    sleep(10)
+
 
     # Play favorite
     player.play_favorite()
-    sleep(20)
+    sleep(15)
 
     # Stop
     player.stop()
 
+    player.exit()
 
 
 if __name__ == "__main__":
