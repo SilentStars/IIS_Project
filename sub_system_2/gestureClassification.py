@@ -10,7 +10,7 @@ import sklearn as sk
 import tensorflow as tf
 from sklearn.neighbors import KNeighborsClassifier
 
-def _concat_data(data_folder="course_dataset")->pd.DataFrame:
+def _concat_data(data_folder="../course_dataset")->pd.DataFrame:
     """Concat the 6 datasets in one dataframe
     Some preprocessing tasks are also done
 
