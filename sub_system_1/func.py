@@ -22,6 +22,3 @@ def read_record(path):
         else:
             frames.append(frame)
     return frames
-
-
-read_record('/Users/houqinhan/Desktop/UppsalaCourse/IIS/IIS_Project/sub_system_2/course_dataset/ASL_letter_A/videos/video_0.mp4')
