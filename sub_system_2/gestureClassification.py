@@ -8,10 +8,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 import sklearn as sk
 import tensorflow as tf
-import plotly.express as px
-#'width': 640, 'height': 480
+from sklearn.neighbors import KNeighborsClassifier
 
-def _concat_data(data_folder="course_dataset")->pd.DataFrame:
+def _concat_data(data_folder="../course_dataset")->pd.DataFrame:
     """Concat the 6 datasets in one dataframe
     Some preprocessing tasks are also done
 
@@ -43,7 +42,7 @@ def _get_Xs_ys(ds:pd.DataFrame)->Tuple:
     frames = ds.groupby(by=['gesture','video_idx','frame']).groups
     for (gesture,_,_),idx in frames.items():
         y.append(gesture.split('_')[-1])
-        X.append(ds.loc[idx][["x","y"]].to_numpy().tolist())
+        X.append(ds.loc[idx][["x","y"]].to_numpy().reshape(-1).tolist())
 
     X,y = np.array(X), np.array(y)
 
@@ -92,8 +91,8 @@ def _build_model()->tf.keras.models.Sequential:
     # build the model
     model = tf.keras.models.Sequential(
         layers = [
-            tf.keras.layers.Input(shape=(20,2)),
-            tf.keras.layers.Flatten(),
+            tf.keras.layers.Input(shape=(40,)),
+            # tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(20,activation='relu'),
             tf.keras.layers.Dense(20,activation='relu'),
             tf.keras.layers.Dense(20,activation='relu'),
@@ -125,7 +124,7 @@ def _train_model(model:tf.keras.models.Sequential,X_train:np.array,y_train:np.ar
     """
     early_stop = tf.keras.callbacks.EarlyStopping(
         monitor="val_loss",
-        min_delta=1e-2,
+        min_delta=1e-4,
         patience=5,
         verbose=1,
         mode="auto",
@@ -140,4 +139,9 @@ def _train_model(model:tf.keras.models.Sequential,X_train:np.array,y_train:np.ar
             callbacks=[early_stop]
             )
     return history
+
+def _get_KNN_clf(X_train,y_train,**kwargs):
+    clf = KNeighborsClassifier(**kwargs)
+    clf.fit(X_train,y_train)
+    return clf
 
