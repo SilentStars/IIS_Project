@@ -1,4 +1,4 @@
-
+import pickle
 from typing import Tuple
 import pandas as pd
 import numpy as np
@@ -42,7 +42,7 @@ def _get_Xs_ys(ds:pd.DataFrame)->Tuple:
     frames = ds.groupby(by=['gesture','video_idx','frame']).groups
     for (gesture,_,_),idx in frames.items():
         y.append(gesture.split('_')[-1])
-        X.append(ds.loc[idx][["x","y"]].to_numpy().reshape(-1).tolist())
+        X.append((ds.loc[idx][["x","y"]].to_numpy()/4).reshape(-1).tolist())
 
     X,y = np.array(X), np.array(y)
 
@@ -145,3 +145,23 @@ def _get_KNN_clf(X_train,y_train,**kwargs):
     clf.fit(X_train,y_train)
     return clf
 
+
+class GestureClassifier:
+    """"
+    """
+    
+    def __init__(self,model_path:str,encoder_path:str) -> None:
+        
+        try:
+            self.model = tf.keras.models.load_model(model_path)
+        except Exception as e:
+            raise(e)
+        with open(encoder_path,'rb') as f:
+            self.encoder = pickle.load(f)
+    
+    def predict(self,coordinates:np.array)->str:
+        oneHot = self.model.predict(coordinates)
+        pred = self.encoder.inverse_transform(oneHot)[0,0]
+        return pred
+
+    
