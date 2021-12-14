@@ -24,6 +24,8 @@ def get_video(input_id,detector,clf):
     print('cleaning done')
     pass
 
+
+
 def get_gesture(frame,detector,clf):
     processed = detector.process_frame(frame,is_BGR=True)
     coord = detector.predict(processed)
