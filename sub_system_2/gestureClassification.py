@@ -37,19 +37,31 @@ def _get_Xs_ys(ds:pd.DataFrame)->Tuple:
     Returns:
         Tuple: tuple of 6 lists : X_train,X_val,X_test,y_train,y_val,y_test
     """
-    X = []
-    y = []
-    frames = ds.groupby(by=['gesture','video_idx','frame']).groups
-    for (gesture,_,_),idx in frames.items():
-        y.append(gesture.split('_')[-1])
-        X.append((ds.loc[idx][["x","y"]].to_numpy()/4).reshape(-1).tolist())
+    X_train,X_val,X_test = [],[],[]
+    y_train,y_val,y_test = [],[],[]
 
-    X,y = np.array(X), np.array(y)
+    for label in ds.gesture.unique():
+        df = ds.loc[ds.gesture == label]
+        video_idx = df.video_idx.unique()
+        train,test = train_test_split(video_idx,test_size=.2)
+        train,val = train_test_split(train,test_size=.2)
+        for idx in video_idx:
+            frames = df.loc[df.video_idx == idx]
+            coordinates = frames[["x","y"]].to_numpy().reshape(len(frames.frame.unique()),40).tolist()
+            if idx in train:
+                X_train+= coordinates
+                y_train+= [label]*len(coordinates)
+            elif idx in val:
+                X_val+= coordinates
+                y_val+= [label]*len(coordinates)
 
-    X_train,X_val,y_train,y_val = train_test_split(X,y,test_size=.2)
-    X_train,X_test,y_train,y_test = train_test_split(X_train,y_train,test_size=.2)
+            else:
+                assert idx in test
+                X_test+= coordinates
+                y_test+= [label]*len(coordinates)
 
-    X_train,y_train = shuffle(X_train,y_train)
+    X_train,X_val,X_test = np.array(X_train),np.array(X_val),np.array(X_test)
+    y_train,y_val,y_test = np.array(y_train),np.array(y_val),np.array(y_test)
 
     return X_train,X_val,X_test,y_train,y_val,y_test
 
@@ -93,15 +105,16 @@ def _build_model()->tf.keras.models.Sequential:
         layers = [
             tf.keras.layers.Input(shape=(40,)),
             # tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(20,activation='relu'),
-            tf.keras.layers.Dense(20,activation='relu'),
-            tf.keras.layers.Dense(20,activation='relu'),
+            tf.keras.layers.Dense(50,activation='relu'),
+            tf.keras.layers.Dense(50,activation='relu'),
+            tf.keras.layers.Dense(50,activation='relu'),
+            tf.keras.layers.Dense(50,activation='relu'),
             tf.keras.layers.Dense(6,activation='softmax'),
         ]
     )
 
     # Set up gradient descent / create training pipeline.
-    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=1e-3),
+    model.compile(optimizer=tf.keras.optimizers.Adamax(learning_rate=1e-4),
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=[tf.keras.metrics.CategoricalAccuracy()]
                 )
@@ -109,7 +122,7 @@ def _build_model()->tf.keras.models.Sequential:
     return model
 
 
-def _train_model(model:tf.keras.models.Sequential,X_train:np.array,y_train:np.array,X_val:np.array,y_val:np.array,x_test:np.array,y_test:np.array):
+def _train_model(model:tf.keras.models.Sequential,X_train:np.array,y_train:np.array,X_val:np.array,y_val:np.array):
     """Train our model
     Returns history of training
 
@@ -119,12 +132,10 @@ def _train_model(model:tf.keras.models.Sequential,X_train:np.array,y_train:np.ar
         y_train (np.array):
         X_val (np.array):
         y_val (np.array):
-        x_test (np.array):
-        y_test (np.array):
     """
     early_stop = tf.keras.callbacks.EarlyStopping(
         monitor="val_loss",
-        min_delta=1e-4,
+        min_delta=1e-3,
         patience=5,
         verbose=1,
         mode="auto",
