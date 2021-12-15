@@ -9,6 +9,7 @@ from sklearn.utils import shuffle
 import sklearn as sk
 import tensorflow as tf
 from sklearn.neighbors import KNeighborsClassifier
+from joblib import load as jlLoad
 
 def _concat_data(data_folder="../course_dataset")->pd.DataFrame:
     """Concat the 6 datasets in one dataframe
@@ -157,7 +158,7 @@ def _get_KNN_clf(X_train,y_train,**kwargs):
     return clf
 
 
-class GestureClassifier:
+class GestureClassifierMLP:
     """"
     """
     
@@ -171,8 +172,20 @@ class GestureClassifier:
             self.encoder = pickle.load(f)
     
     def predict(self,coordinates:np.array)->str:
+        coordinates = coordinates.reshape((1,-1))
         oneHot = self.model.predict(coordinates)
         pred = self.encoder.inverse_transform(oneHot)[0,0]
         return pred
 
+
+class GestureClassifierKNN:
+    def __init__(self,path:str) -> None:
+        self.path = path
+        self.knn = jlLoad(path)
+
+    def predict(self,coordinates):
+        coordinates = coordinates.reshape((1,-1))
+        label = self.knn.predict(coordinates)[0]
+        letter = label.split('_')[-1]
+        return letter
     

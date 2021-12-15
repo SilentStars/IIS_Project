@@ -69,4 +69,4 @@ if __name__ == '__main__':
   model.fit(train_dataset, validation_data=val_dataset,verbose=1,epochs=EPOCHS,callbacks=[early_stop])
 
 
-  model.save("Trained_model")
+  model.save("models/Trained_model")
