@@ -10,17 +10,22 @@ import os
 
 
 if __name__=="__main__":
+    assert len(sys.argv) >= 2, "You must specified at least 'knn' or 'mlp' as positional argument"
+    assert sys.argv[1].lower() in ['mlp','knn'], "First positional argument must be in [mlp,knn]"
     drawing = mp.solutions.drawing_utils
     styles = mp.solutions.drawing_styles
     hands = mp.solutions.hands
     mp_joints = [hands.HandLandmark.WRIST,hands.HandLandmark.THUMB_MCP,hands.HandLandmark.THUMB_IP,hands.HandLandmark.THUMB_TIP,hands.HandLandmark.INDEX_FINGER_MCP,hands.HandLandmark.INDEX_FINGER_PIP,hands.HandLandmark.INDEX_FINGER_DIP,hands.HandLandmark.INDEX_FINGER_TIP,hands.HandLandmark.MIDDLE_FINGER_MCP,hands.HandLandmark.MIDDLE_FINGER_PIP,hands.HandLandmark.MIDDLE_FINGER_DIP,hands.HandLandmark.MIDDLE_FINGER_TIP,hands.HandLandmark.RING_FINGER_MCP,hands.HandLandmark.RING_FINGER_PIP,hands.HandLandmark.RING_FINGER_DIP,hands.HandLandmark.RING_FINGER_TIP,hands.HandLandmark.PINKY_MCP,hands.HandLandmark.PINKY_PIP,hands.HandLandmark.PINKY_DIP,hands.HandLandmark.PINKY_TIP]
     
-    #gesture_clf = GestureClassifier('sub_system_2/models/mlp_reg','sub_system_2/encoder_reg.obj')
-    gesture_clf = GestureClassifierKNN(os.path.join('sub_system_2','models','knn.obj'))
+    mod = sys.argv[1].lower()
+    if mod == "mlp":
+        gesture_clf = GestureClassifierMLP('sub_system_2/models/mlp_reg','sub_system_2/encoder_reg.obj')
+    else:
+        gesture_clf = GestureClassifierKNN(os.path.join('sub_system_2','models','knn.obj'))
 
 
-    if len(sys.argv) == 2:
-        id = sys.argv[1]
+    if len(sys.argv) == 3:
+        id = sys.argv[2]
     else:
         id = 0
     cap = cv2.VideoCapture(id) 
@@ -56,8 +61,8 @@ if __name__=="__main__":
                             joints_corrdinate.append((hand_landmarks.landmark[mp_joint].x * image_width,hand_landmarks.landmark[mp_joint].y * image_height))
                         for c in joints_corrdinate:
                             cv2.circle(image_annot,(int(c[0]),int(c[1])),5,(255,0,0))
-                gesture = gesture_clf.predict(np.array(joints_corrdinate))
-                print(gesture)
+                    gesture = gesture_clf.predict(np.array(joints_corrdinate))
+                    print(gesture)
                 # Flip the image horizontally for a selfie-view display.
                 cv2.imshow('Model predictions',cv2.flip(image_annot,1))
                 if cv2.waitKey(5) & 0xFF == 27:
