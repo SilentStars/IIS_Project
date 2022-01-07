@@ -12,8 +12,6 @@ import os
 if __name__=="__main__":
     assert len(sys.argv) >= 2, "You must specified at least 'knn' or 'mlp' as positional argument"
     assert sys.argv[1].lower() in ['mlp','knn'], "First positional argument must be in [mlp,knn]"
-    drawing = mp.solutions.drawing_utils
-    styles = mp.solutions.drawing_styles
     hands = mp.solutions.hands
     mp_joints = [hands.HandLandmark.WRIST,hands.HandLandmark.THUMB_MCP,hands.HandLandmark.THUMB_IP,hands.HandLandmark.THUMB_TIP,hands.HandLandmark.INDEX_FINGER_MCP,hands.HandLandmark.INDEX_FINGER_PIP,hands.HandLandmark.INDEX_FINGER_DIP,hands.HandLandmark.INDEX_FINGER_TIP,hands.HandLandmark.MIDDLE_FINGER_MCP,hands.HandLandmark.MIDDLE_FINGER_PIP,hands.HandLandmark.MIDDLE_FINGER_DIP,hands.HandLandmark.MIDDLE_FINGER_TIP,hands.HandLandmark.RING_FINGER_MCP,hands.HandLandmark.RING_FINGER_PIP,hands.HandLandmark.RING_FINGER_DIP,hands.HandLandmark.RING_FINGER_TIP,hands.HandLandmark.PINKY_MCP,hands.HandLandmark.PINKY_PIP,hands.HandLandmark.PINKY_DIP,hands.HandLandmark.PINKY_TIP]
     
@@ -28,7 +26,11 @@ if __name__=="__main__":
         id = sys.argv[2]
     else:
         id = 0
-    cap = cv2.VideoCapture(id) 
+    cap = cv2.VideoCapture(id)
+
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+
     with hands.Hands(
                 model_complexity=0,
                 static_image_mode=(id!=0),
@@ -58,9 +60,9 @@ if __name__=="__main__":
                 if results.multi_hand_landmarks:
                     for hand_landmarks in results.multi_hand_landmarks:
                         for mp_joint in mp_joints:
-                            joints_corrdinate.append((hand_landmarks.landmark[mp_joint].x * image_width,hand_landmarks.landmark[mp_joint].y * image_height))
+                            joints_corrdinate.append((hand_landmarks.landmark[mp_joint].y * image_height,hand_landmarks.landmark[mp_joint].x * image_width))
                         for c in joints_corrdinate:
-                            cv2.circle(image_annot,(int(c[0]),int(c[1])),5,(255,0,0))
+                            cv2.circle(image_annot,(int(c[1]),int(c[0])),5,(255,0,0),cv2.FILLED)
                     gesture = gesture_clf.predict(np.array(joints_corrdinate))
                     print(gesture)
                 # Flip the image horizontally for a selfie-view display.
