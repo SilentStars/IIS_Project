@@ -27,6 +27,8 @@ class AudioPlayer:
 
         self.stop_thread = False
         self.t = threading.Thread(target=self.run_eyes, args=(lambda: self.stop_thread,))
+    
+    def start(self):    
         self.t.start()
 
     def run_eyes(self, stop):
@@ -145,28 +147,28 @@ class AudioPlayer:
     def blink_left(self, duration=1.0):
         gesture = {'frames': [{"time": [0.33], "params": {"BROW_DOWN_LEFT": 2.0}},
                               {"time": [duration], "params": {"reset": True}}], "class": "furhatos.gestures.Gesture"}
-        self.furhat.gesture(body=gesture)
-        sleep(duration)
+        self.furhat.gesture(body=gesture,async_req = True)
+        #sleep(duration)
 
     def blink_right(self, duration=1.0):
         gesture = {'frames': [{"time": [0.33], "params": {"BROW_DOWN_RIGHT": 2.0}},
                               {"time": [duration], "params": {"reset": True}}], "class": "furhatos.gestures.Gesture"}
-        self.furhat.gesture(body=gesture)
-        sleep(duration)
+        self.furhat.gesture(body=gesture,async_req = True)
+        #sleep(duration)
 
     def big_smile(self, duration=3.0):
         gesture = {'frames': [{"time": [1.0], "params": {"SMILE_OPEN": 1.0}},
                               {"time": [duration + 1.0], "params": {"reset": True}}],
                    "class": "furhatos.gestures.Gesture"}
-        self.furhat.gesture(body=gesture)
-        sleep(duration)
+        self.furhat.gesture(body=gesture,async_req = True)
+        #sleep(duration)
 
     def surprise(self, duration=3.0):
         gesture = {'frames': [{"time": [1.0], "params": {"SURPRISE": 1.0}},
                               {"time": [duration + 1.0], "params": {"reset": True}}],
                    "class": "furhatos.gestures.Gesture"}
-        self.furhat.gesture(body=gesture)
-        sleep(duration)
+        self.furhat.gesture(body=gesture,async_req = True)
+        #sleep(duration)
 
     def exit(self):
         self.stop_thread = True
